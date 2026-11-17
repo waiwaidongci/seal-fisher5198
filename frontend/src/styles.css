@@ -8,3 +8,11 @@ main { background-image:linear-gradient(to right, transparent 39px, color-mix(in
 .worksheet { border:1px solid var(--ink);border-top:8px solid var(--accent); }
 th { border-top:2px solid var(--ink); }
 @media(max-width:767px){ .hero {grid-template-columns:1fr} }
+
+/* Recovery stage strip: explain the current phase and why. */
+.stage{display:block;margin:18px 0}
+.stage.queued{border-left-color:color-mix(in oklch,var(--accent) 55%,var(--ink))}
+.stage.running{border-left-color:var(--accent)}
+.stage.failed,.stage.integrity{background:color-mix(in oklch,oklch(45% .16 25) 9%,var(--paper));border-left-color:oklch(45% .16 25)}
+.stage small{display:block;margin-top:8px;color:color-mix(in oklch,var(--ink) 75%,var(--paper))}
+.status.integrity{background:color-mix(in oklch,oklch(45% .16 25) 18%,var(--paper))}

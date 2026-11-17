@@ -47,12 +47,19 @@ services:
     build: ./backend
     container_name: ${COMPOSE_PROJECT_NAME:-seal-fisher}-worker
     command: python -m src.worker
-    environment: *app-env
+    environment:
+      <<: *app-env
+      WORKER_CONCURRENCY: ${WORKER_CONCURRENCY:-2}
+      WORKER_INDEX: "0"
+      RUN_LEASE_SECONDS: ${RUN_LEASE_SECONDS:-30}
+      NOTIFY_GRACE_SECONDS: ${NOTIFY_GRACE_SECONDS:-5}
     volumes: ["run-artifacts:/app/artifacts"]
     depends_on:
       backend: {condition: service_healthy}
       db: {condition: service_healthy}
       redis: {condition: service_healthy}
+    # Scale with `docker compose up -d --scale worker=3`; each replica claims
+    # atomically and is fenced by its lease, so they never duplicate work.
     healthcheck:
       test: ["CMD", "python", "-c", "import os,time; assert time.time()-os.stat('/tmp/worker-heartbeat').st_mtime<15"]
       interval: 3s

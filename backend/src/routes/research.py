@@ -1,4 +1,4 @@
-from fastapi import APIRouter,Depends,HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import Response
 from sqlalchemy import select
 from src.config.database import get_db
@@ -18,7 +18,9 @@ router=APIRouter()
 @router.get('/domain')
 def domain(user=Depends(current_user)): return DOMAIN
 @router.get('/overview')
-def overview(db=Depends(get_db),user=Depends(current_user)): return research.overview(db)
+def overview(db=Depends(get_db),user=Depends(current_user)):
+    runs.reconcile(db)
+    return research.overview(db)
 @router.get('/studies')
 def list_studies(db=Depends(get_db),user=Depends(current_user)): return studies.list_studies(db)
 @router.post('/studies')
@@ -35,9 +37,13 @@ def remove(id:int,row_id:int,db=Depends(get_db),user=Depends(writer)):
     if not row or row.study_id!=id: raise HTTPException(404,'记录不存在')
     db.delete(row);log(db,user,'observation.delete',row_id);db.commit();return {'deleted':True}
 @router.get('/runs')
-def list_runs(db=Depends(get_db),user=Depends(current_user)): return runs.list_runs(db)
+def list_runs(db=Depends(get_db),user=Depends(current_user)):
+    runs.reconcile(db)
+    return runs.list_runs(db)
 @router.post('/runs')
 def create_run(data:RunInput,db=Depends(get_db),user=Depends(writer)): return research.create_run(db,data,user)
+@router.post('/runs/{id}/retry')
+def retry_run(id:int,db=Depends(get_db),user=Depends(writer)): return runs.retry(db,id,user)
 @router.get('/runs/{id}')
 def get_run(id:int,db=Depends(get_db),user=Depends(current_user)): return runs.get(db,id)
 @router.post('/runs/{id}/review')
